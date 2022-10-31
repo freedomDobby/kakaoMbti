@@ -1,5 +1,12 @@
 import React from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  useNavigate,
+  useParams,
+  useLocation,
+} from "react-router-dom";
+import axios from "axios";
 import "./App.css";
 
 function Main() {
@@ -57,13 +64,13 @@ const Answer = (props) => {
             value: props.value,
           },
         });
-
-        // const pathname = window.location.pathname;
-        // const nextStep = parseInt(pathname.charAt(pathname.length - 1)) + 1;
-        // navigation(`/on${nextStep}`);
-
-        // navigation('');
       }}
+
+      // const pathname = window.location.pathname;
+      // const nextStep = parseInt(pathname.charAt(pathname.length - 1)) + 1;
+      // navigation(`/on${nextStep}`);
+
+      // navigation('');
     >
       {props.text}
     </button>
@@ -165,7 +172,25 @@ function Page5() {
   );
 }
 
-function Result() {
+function Result(route) {
+  const { state } = useLocation();
+
+  const MBTI결과값가져오기 = () => {
+    axios({
+      url: "http://localhost:5000/mbti",
+      method: "GET",
+      responseType: "json",
+      params: state,
+    })
+      .then(() => {})
+      .catch((e) => {
+        console.log("erro!", e);
+      });
+  };
+  React.useEffect(() => {
+    MBTI결과값가져오기();
+  }, []);
+
   return <div>결과화면 !!</div>;
 }
 const StoreContext = React.createContext({});
@@ -175,6 +200,8 @@ const StoreContext = React.createContext({});
  * React useReducer [비지니스 로직 분리되어있는걸 한곳에 마법~]
  */
 function App() {
+  const navigation = useNavigate();
+
   const [dispatch, setDispatchType] = React.useState({
     code: null,
     params: null,
@@ -198,13 +225,31 @@ function App() {
     },
   ]);
 
+  let [page, setPage] = React.useState(1);
+
+  // const cloneMbti = mbti.findIndex((itme) => {
+  //   console.log(itme);
+  // });
+
   React.useEffect(() => {
     switch (dispatch.code) {
-      /**
-       * mbti state값을 바꾸는 로직 구현
-       */
       case "답변":
-        const { value } = dispatch.params;
+        const cloneMbti = [...mbti];
+        const findMbti = cloneMbti.findIndex((item) => {
+          return item[dispatch.params.value] !== undefined;
+        });
+
+        cloneMbti[findMbti][dispatch.params.value] += 1;
+        setMbti(cloneMbti);
+        const nextPage = (page += 1);
+        setPage(nextPage);
+        if (nextPage === 6) {
+          navigation("/result", {
+            state: mbti,
+          });
+        } else {
+          navigation(`/p${nextPage}`);
+        }
 
         break;
 
@@ -222,7 +267,7 @@ function App() {
         <Route exact path="/p3" element={<Page3 />}></Route>
         <Route exact path="/p4" element={<Page4 />}></Route>
         <Route exact path="/p5" element={<Page5 />}></Route>
-        <Route exact path="/p6" element={<Result />}></Route>
+        <Route exact path="/result" element={<Result />}></Route>
       </Routes>
     </StoreContext.Provider>
   );
