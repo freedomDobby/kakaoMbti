@@ -208,12 +208,6 @@ function App() {
 
         break;
 
-      /**
-       * 로그인 하는 로직 구현
-       */
-      case "로그인":
-        break;
-
       default:
         break;
     }
