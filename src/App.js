@@ -12,6 +12,20 @@ import "./App.css";
 function Main() {
   const navigation = useNavigate();
 
+  React.useEffect(() => {
+    const restorageItem = window.localStorage.getItem("mbti");
+    // const restoragePage = window.localStorage.getItem("mbti"); 취소한 페이지받기
+
+    // if (restorageItem != null) {
+    //   if (window.confirm("저장한값 확인")) {
+    //     navigation(/저장한페이지)
+    //   } else {
+    //     navigation(/);
+
+    //   }
+    // }
+  }, []);
+
   return (
     <div className="mainBody">
       <img
@@ -50,7 +64,7 @@ const QuestionImag = (props) => {
 };
 
 const Answer = (props) => {
-  const navigation = useNavigate();
+  // const navigation = useNavigate();
 
   const { setDispatchType } = React.useContext(StoreContext);
 
@@ -175,14 +189,20 @@ function Page5() {
 function Result(route) {
   const { state } = useLocation();
 
-  const MBTI결과값가져오기 = () => {
-    axios({
+  const navigation = useNavigate();
+
+  const [result, setResult] = React.useState(undefined);
+
+  const MBTI결과값가져오기 = async () => {
+    await axios({
       url: "http://localhost:5000/mbti",
       method: "GET",
       responseType: "json",
       params: state,
     })
-      .then(() => {})
+      .then(({ data }) => {
+        setResult(data);
+      })
       .catch((e) => {
         console.log("erro!", e);
       });
@@ -191,7 +211,23 @@ function Result(route) {
     MBTI결과값가져오기();
   }, []);
 
-  return <div>결과화면 !!</div>;
+  if (result === undefined) {
+    return <div></div>;
+  }
+
+  return (
+    <div className="resultBody">
+      <img src={result.content} className="result-img" alt="결과화면" />
+      <button
+        className="btn"
+        onClick={() => {
+          navigation("/");
+        }}
+      >
+        다시하기
+      </button>
+    </div>
+  );
 }
 const StoreContext = React.createContext({});
 
@@ -250,6 +286,17 @@ function App() {
         } else {
           navigation(`/p${nextPage}`);
         }
+
+        // console.log(cloneMbti);
+        const restorage = window.localStorage.setItem(
+          "mbti",
+          JSON.stringify(cloneMbti)
+        );
+
+        // const restoragePage = window.localStorage.setItem(
+        //   "Page",
+        //   JSON.stringify()
+        // ); //취소한페이지 저장
 
         break;
 
