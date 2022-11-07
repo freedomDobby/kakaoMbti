@@ -5,25 +5,19 @@ import {
   useNavigate,
   useParams,
   useLocation,
+  json,
 } from "react-router-dom";
 import axios from "axios";
 import "./App.css";
 
 function Main() {
   const navigation = useNavigate();
+  const { setDispatchType } = React.useContext(StoreContext);
 
   React.useEffect(() => {
-    const restorageItem = window.localStorage.getItem("mbti");
-    // const restoragePage = window.localStorage.getItem("mbti"); 취소한 페이지받기
-
-    // if (restorageItem != null) {
-    //   if (window.confirm("저장한값 확인")) {
-    //     navigation(/저장한페이지)
-    //   } else {
-    //     navigation(/);
-
-    //   }
-    // }
+    setDispatchType({
+      code: "임시저장",
+    });
   }, []);
 
   return (
@@ -287,17 +281,33 @@ function App() {
           navigation(`/p${nextPage}`);
         }
 
-        // console.log(cloneMbti);
-        const restorage = window.localStorage.setItem(
-          "mbti",
-          JSON.stringify(cloneMbti)
-        );
+        localStorage.setItem("MBTI", JSON.stringify(cloneMbti));
+        localStorage.setItem("PAGE", nextPage);
 
         // const restoragePage = window.localStorage.setItem(
         //   "Page",
         //   JSON.stringify()
         // ); //취소한페이지 저장
 
+        break;
+
+      case "임시저장":
+        const 기억되어있는MBTI = localStorage.getItem("MBTI");
+        const 기억되어있는PAGE = localStorage.getItem("PAGE");
+
+        if (기억되어있는PAGE === "6") {
+          localStorage.removeItem("MBTI");
+          localStorage.removeItem("PAGE");
+          return;
+        }
+
+        if (기억되어있는MBTI && 기억되어있는PAGE) {
+          const 기억되어있는MBTI배열 = json.parse(기억되어있는MBTI);
+          setMbti(기억되어있는MBTI배열);
+          setPage(Number(기억되어있는PAGE));
+
+          navigation(`/p${기억되어있는PAGE}`);
+        }
         break;
 
       default:
